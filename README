@@ -2,6 +2,8 @@ You have to write a program in order to defend your village.
 
 There are three kinds of buildings, houses, walls, and cannons, and four actions, "build house", "upgrade wall", "upgrade cannon",and "fire", in this game.
 
+# in this version, "upgrade wall" and "upgrade cannon" are "build wall" and "build cannon"
+
 At each step, you can choose an action.
 "build house" may increase the number of the villages by one.
 "upgrade cannon" may increase your attack points by the number of your villages.
