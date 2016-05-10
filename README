@@ -1,0 +1,24 @@
+You have to write a program in order to defend your village.
+
+There are three kinds of buildings, houses, walls, and cannons, and four actions, "build house", "upgrade wall", "upgrade cannon",and "fire", in this game.
+
+At each step, you can choose an action.
+"build house" may increase the number of the villages by one.
+"upgrade cannon" may increase your attack points by the number of your villages.
+"upgrade wall" may increase your health points by the number of your illages, too.
+"fire" means to attack your opponent, making the HP of your opponent decrease by your attack points.
+
+Besides, you can use "if/else" with ">" or "=" to make different decisions.
+
+"m_house"  means the number of your villagers.
+"m_wall"   means your HP.
+"m_cannon" means your attack point.
+"e_house"  means the number of your opponent's villagers.
+"e_wall"   means your opponent's HP.
+"e_cannon" means your opponent's attack point.
+
+Noting that "e_if" and "e_else" cost a step for detecting the values of your opponent, and "m_if" and "m_else" cost nothing but you can use any parameter about your opponent in it.
+
+Whenever your HP decreases to zero, you lose the game.
+
+Some exemples are in the file "mine" and "enemy".
