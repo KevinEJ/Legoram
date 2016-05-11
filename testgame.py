@@ -1,11 +1,29 @@
 import pdb
+import random
+import time
+import sys
+
+if len(sys.argv) == 2:
+    print "Single player "
+    mode = "single"
+elif len(sys.argv) == 3:
+    print "Dual players"
+    mode = "Dual"
+else:
+    print "Input error"
+    print "python testgame.py <Players1's program> [Player2's program] "
+
+#print 'Number of arguments:', len(sys.argv), 'arguments.'
+#print 'Argument List:', str(sys.argv)
 
 #            house , wall , connon , ifFinish
 MyCastle    = [ 0 , 0 , 0 , False , "User"]
 EnemyCastle = [ 0 , 0 , 0 , False , "Com1"]
 
-My_stragedy = open("mine" , "r")
-Enemy_stragedy = open("enemy" , "r")
+My_stragedy = open( sys.argv[1] , "r")
+Enemy_stragedy = 0 
+if mode == "Dual":
+    Enemy_stragedy = open( sys.argv[2] , "r")
 count = 0
 count_if = 0
 #My_finish = False
@@ -61,8 +79,8 @@ def myParse( Comment , my , enemy ):
                     count_if -= 1
                 elif M.split(" ")[0] == "e_if":
                     count_if += 1
-                else
-                    print "if else count error"
+                #else:
+                    #print "if else count error"
             #myParse()
             return
     elif M_comment[0] == "m_if":
@@ -80,10 +98,10 @@ def myParse( Comment , my , enemy ):
                     break
                 elif M.split(" ")[0] == "m_else" and count_if != 0:
                     count_if -= 1
-                elif M.split(" ")[0] == "m_if"
+                elif M.split(" ")[0] == "m_if":
                     count_if += 1
-                else
-                    print "if else count error"
+                #else:
+                    #print "if else count error"
             #myParse()
             myParse(Comment , my , enemy)
     elif M_comment[0] == "e_else":
@@ -157,10 +175,23 @@ def getcondition(M_comment , My , Enemy):
         print "comment "  , count , " input error"
 
 
-while MyCastle[3] == False or EnemyCastle[3] == False  :
+while MyCastle[3] == False :#or EnemyCastle[3] == False  :
     print "=============  " , count , "round  =========================="
     myParse(My_stragedy , MyCastle , EnemyCastle)
-    myParse(Enemy_stragedy , EnemyCastle , MyCastle)
+    if mode == "Dual":
+        myParse(Enemy_stragedy , EnemyCastle , MyCastle)
+    elif mode == "single":
+        move = random.randint(0,3)
+        if move == 0 :
+            EnemyCastle[0] += 1
+        elif move == 1 :
+            EnemyCastle[1] += EnemyCastle[0]
+        elif move == 2 :
+            EnemyCastle[2] += EnemyCastle[0]
+        elif move == 3 :
+            MyCastle[1] -= EnemyCastle[2] 
+    else:
+        print "mode error"
     count += 1          
     print MyCastle
     print EnemyCastle
