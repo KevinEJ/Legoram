@@ -1,20 +1,26 @@
+int outPin = 9;
+int val = 0;
+
 int sensePin = 0;
 int counter = 0;
 int value = 0;
 
 void setup() {
   analogReference(DEFAULT);
+  //pinMode(sensePin,INPUT);
   Serial.begin(9600);
 }
 
 void loop() {
-  value += analogRead(sensePin);
   counter++;
-  if(counter==10){
-    value /= counter;
-    Serial.println(value);
-    counter = 0;
-    value = 0;
+  if(counter==50){
+    //value /= counter;
+    value = analogRead(sensePin);
+    int ID = (value-2)/4;
+    Serial.println(ID);
+    //delay(100);
   }
-  delay(5);
+  else if(counter==100)
+    counter=0;
+  delay(10);
 }
