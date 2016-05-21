@@ -1,7 +1,7 @@
 byte addr = 2;
 bool dataTransmitted = false;
 int turnPin = 2;
-int turnOut = 3;
+int turnOut = 6;
 
 #include <Wire.h>
 
@@ -20,7 +20,7 @@ void loop() {
 // function that executes whenever data is requested by master
 // this function is registered as an event, see setup()
 void requestEvent() {
-  if(digitalRead(turnPin)==HIGH){//only if my turn
+  if(digitalRead(turnPin)==HIGH && dataTransmitted==false){//only if my turn
     Wire.write("2h  ");
     dataTransmitted = true;
   }

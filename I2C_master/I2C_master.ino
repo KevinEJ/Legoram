@@ -2,7 +2,7 @@
 // Devices with higher bit address might not be seen properly.
 #include <Wire.h>
 
-int turnPin = 3;
+int turnPin = 6;
 
 void setup()
 {
