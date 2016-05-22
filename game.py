@@ -603,6 +603,8 @@ class Game(object):
         if stage == 0:
             if item+'2_s' in self.items:
                 return
+            if item+'2' in self.items:
+                return
             sprite = Sprite((x,2), SPRITE_CACHE['smoke.png'])
             self.items[item+'2_s'] = sprite 
             self.sprites.add(sprite)
@@ -697,14 +699,12 @@ class Game(object):
 
     def build_man(self,item):
         if item == 'm_man':
-            if len(self.m_men)>0:                                  ####################demo
-                return
-            sprite = Soldier(item,(6,6))
+            sprite = Soldier(item,(6,6+len(self.m_men)))
             self.m_men[str(len(self.m_men))]=sprite
         else:
             if len(self.e_men)>0:                                  ####################demo
                 return
-            sprite = Soldier(item,(45,6))
+            sprite = Soldier(item,(45,6+len(self.m_men)))
             self.e_men[str(len(self.e_men))]=sprite
         self.sprites.add(sprite)
             
@@ -777,11 +777,11 @@ class Game(object):
             self.sprites.add(sprite)
 
         elif stage == 1:
+            if bullet not in self.items:
+                return 0
             if abs(self.items[bullet].pos[0]-castle_pos-1) < 2:
                 self.crash(bullet)
                 return 2
-            if bullet not in self.items:
-                return 0
             elif wall+'2' in self.items:
                 if life == 0 and abs(self.items[bullet].pos[0]-self.items[wall+'2'].pos[0]+1) < 0.5:
                     self.crash(bullet,wall)

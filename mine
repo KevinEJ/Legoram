@@ -1,9 +1,7 @@
 build man
-e_if e_wall > m_man
-    build man
-    build wall
-e_else
-    build man
-    build cannon
-end
+build man
+build man
+build wall
+build cannon
+build wall
 fire
