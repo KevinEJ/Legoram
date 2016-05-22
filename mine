@@ -1,19 +1,9 @@
-build house
-build wall
-build cannon
-e_if m_house = e_wall
-    fire
+build man
+e_if e_wall > m_man
+    build man
     build wall
-    e_if m_house > e_cannon
-        build house
-    e_else
-        fire
-    end
 e_else
-    build house
+    build man
+    build cannon
 end
-m_if m_house > m_wall
-    fire
-m_else
-    build wall
-end
+fire
