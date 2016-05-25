@@ -580,132 +580,73 @@ class Game(object):
         self.pressed_key = None
 
     def castle(self):
-        for x in range (0,3):
-            for y in range (0,4):
-                sprite = Castle((x+3,y+4), MAP_CACHE['castle.png'])
+        for x in range (0,4):
+            for y in range (0,6):
+                sprite = Castle((x+1,y+6), MAP_CACHE['castle.png'])
                 sprite.xy_image(x,y)
                 sprite.depth=x+3*y
                 self.sprites.add(sprite)
 
-                sprite = Castle((x+46,y+4), MAP_CACHE['castle.png'])
+                sprite = Castle((x+46,y+6), MAP_CACHE['castle.png'])
                 sprite.xy_image(x,y)
                 sprite.depth=x+3*y
                 self.sprites.add(sprite)
 
     def build_wall(self, item, stage ,stop):
-        if stop:
-            return
         if item == 'm_wall':
             x=16
         else:
             x=34
 
         if stage == 0:
-            if item+'2_s' in self.items:
-                return
-            if item+'2' in self.items:
-                return
-            sprite = Sprite((x,2), SPRITE_CACHE['smoke.png'])
-            self.items[item+'2_s'] = sprite 
-            self.sprites.add(sprite)
 
-            sprite = Sprite((x,3), SPRITE_CACHE['smoke.png'])
-            self.items[item+'3_s'] = sprite 
-            self.sprites.add(sprite)
+            for y in range (2,17):
+                if y in (8,9,10):
+                    continue
+                elif item+str(y)+'_s' in self.items:
+                    continue
+                else:
+                    sprite = Sprite((x,y), SPRITE_CACHE['smoke.png'])
+                    self.items[item+str(y)+'_s'] = sprite 
+                    self.sprites.add(sprite)
 
-            sprite = Sprite((x,4), SPRITE_CACHE['smoke.png'])
-            self.items[item+'4_s'] = sprite 
-            self.sprites.add(sprite)
-
-            sprite = Sprite((x,5), SPRITE_CACHE['smoke.png'])
-            self.items[item+'5_s'] = sprite 
-            self.sprites.add(sprite)
-
-            sprite = Sprite((x,7), SPRITE_CACHE['smoke.png'])
-            self.items[item+'7_s'] = sprite 
-            self.sprites.add(sprite)
-
-            sprite = Sprite((x,8), SPRITE_CACHE['smoke.png'])
-            self.items[item+'8_s'] = sprite 
-            self.sprites.add(sprite)
-
-            sprite = Sprite((x,9), SPRITE_CACHE['smoke.png'])
-            self.items[item+'9_s'] = sprite 
-            self.sprites.add(sprite)
-
-            sprite = Sprite((x,10), SPRITE_CACHE['smoke.png'])
-            self.items[item+'10_s'] = sprite 
-            self.sprites.add(sprite)
+            
         else:
-            if item+'2' in self.items:
-                return
-            self.remove(item+'2_s')
-            sprite = Castle((x,2), SPRITE_CACHE['wall.png'])
-            sprite.xy_image(0,0)
-            self.items[item+'2'] = sprite #m_wall2
-            self.sprites.add(sprite)
+            for y in range(2,17):
+                if y in (8,9,10):
+                    continue
+                else:
+                    self.remove(item+str(y)+'_s')
 
-            self.remove(item+'3_s')
-            sprite = Castle((x,3), SPRITE_CACHE['wall.png'])
-            sprite.xy_image(0,2)
-            self.items[item+'3'] = sprite #m_wall3
-            self.sprites.add(sprite)
+                    if y in (2,11):
+                        i,j = 0,0
+                    elif y in (7,16):
+                        i,j = 0,4
+                    else:
+                        i,j = 0,2
 
-            self.remove(item+'4_s')
-            sprite = Castle((x,4), SPRITE_CACHE['wall.png'])
-            sprite.xy_image(0,2)
-            self.items[item+'4'] = sprite #m_wall4
-            self.sprites.add(sprite)
+                if item+str(y) not in self.items and not stop:
+                    sprite = Castle((x,y), SPRITE_CACHE['wall.png'])
+                    sprite.xy_image(i,j)
+                    self.items[item+str(y)] = sprite #m_wall2
+                    self.sprites.add(sprite)
 
-            self.remove(item+'5_s')
-            sprite = Castle((x,5), SPRITE_CACHE['wall.png'])
-            sprite.xy_image(0,4)
-            self.items[item+'5'] = sprite #m_wall5
-            self.sprites.add(sprite)
-
-            self.remove(item+'7_s')
-            sprite = Castle((x,7), SPRITE_CACHE['wall.png'])
-            sprite.xy_image(0,0)
-            self.items[item+'7'] = sprite #m_wall7
-            self.sprites.add(sprite)
-
-            self.remove(item+'8_s')
-            sprite = Castle((x,8), SPRITE_CACHE['wall.png'])
-            sprite.xy_image(0,2)
-            self.items[item+'8'] = sprite #m_wall8
-            self.sprites.add(sprite)
-
-            self.remove(item+'9_s')
-            sprite = Castle((x,9), SPRITE_CACHE['wall.png'])
-            sprite.xy_image(0,2)
-            self.items[item+'9'] = sprite #m_wall9
-            self.sprites.add(sprite)
-
-            self.remove(item+'10_s')
-            sprite = Castle((x,10), SPRITE_CACHE['wall.png'])
-            sprite.xy_image(0,4)
-            self.items[item+'10'] = sprite #m_wall10
-            self.sprites.add(sprite)
 
     def remove_wall(self, item):
-        self.remove(item+'2')
-        self.remove(item+'3')
-        self.remove(item+'4')
-        self.remove(item+'5')
-        self.remove(item+'7')
-        self.remove(item+'8')
-        self.remove(item+'9')
-        self.remove(item+'10')
+        for y in range(2,17):
+            self.remove(item+str(y))
 
     def build_man(self,item):
         if item == 'm_man':
-            sprite = Soldier(item,(6,6+len(self.m_men)))
-            self.m_men[str(len(self.m_men))]=sprite
+            men = self.m_men
+            x,y = 5,9
         else:
-            if len(self.e_men)>0:                                  ####################demo
-                return
-            sprite = Soldier(item,(45,6+len(self.m_men)))
-            self.e_men[str(len(self.e_men))]=sprite
+            men = self.e_men
+            x,y = 45,9
+        if len(men)>0:                                  ####################demo
+            return
+        sprite = Soldier(item,(x,y+len(men)))
+        men[str(len(men))]=sprite
         self.sprites.add(sprite)
             
     def build(self, item , stage , stop):
@@ -719,13 +660,10 @@ class Game(object):
             return
 
         if item == 'm_cannon':
-            x,y = 17,8
+            x,y = 17,12
         elif item == 'e_cannon':
-            x,y = 33,8
-        elif item == 'm_bullet':
-            x,y = 18,8
-        else:
-            x,y = 32,8
+            x,y = 33,12
+        
 
         if stage == 0:
             if item+'_s' in self.items:
@@ -736,8 +674,7 @@ class Game(object):
         elif stage == 1:
             self.remove(item+'_s')
             sprite = Sprite((x,y), SPRITE_CACHE[item+'.png'])
-            if item in ('e_cannon','m_cannon'):
-                sprite.move(-7,0)
+            sprite.move(-7,0)
             self.items[item]=sprite
             self.sprites.add(sprite)
             
@@ -745,14 +682,14 @@ class Game(object):
         
     def fire(self, item , stage):
         if item == 'm_fire':
-            x,y = 18,8
+            x,y = 18,12
             bullet = 'm_bullet'
             speed = 30
             wall = 'e_wall'
             castle_pos = 46
             life = EnemyCastle[1]
         else:
-            x,y = 32,8
+            x,y = 32,12
             bullet='e_bullet'
             speed = -30
             wall = 'm_wall'
@@ -975,7 +912,7 @@ class Game(object):
                     self.screen.blit(text, textrect)
 
                     image = pygame.image.load('crash.png').convert_alpha()
-                    self.screen.blit(image,(46*24,58))
+                    self.screen.blit(image,(46*24,85))
                     pygame.display.flip()
 
                 # Process pygame events
@@ -1042,7 +979,7 @@ if __name__ == "__main__":
     MAP_CACHE = TileCache(MAP_TILE_WIDTH, MAP_TILE_HEIGHT)
     TILE_CACHE = TileCache(32, 32)
     pygame.init()
-    pygame.display.set_mode((1224, 190))
+    pygame.display.set_mode((1224, 300))
     pygame.display.set_caption("Legoram")
 
 
