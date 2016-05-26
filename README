@@ -1,3 +1,10 @@
+keys:
+
+ENTER : start compiking
+SPACE:  pause/resume/start game
+ESC:      quit all
+
+
 You have to write a program in order to defend your village.
 
 There are three kinds of buildings, houses, walls, and cannons, and four actions, "build house", "upgrade wall", "upgrade cannon",and "fire", in this game.
