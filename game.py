@@ -16,6 +16,10 @@ import serial
 
 
 
+
+
+
+
 def myParse( Comment , my , enemy , action , player ):
     #global My_stragedy
 
@@ -906,7 +910,7 @@ class Game(object):
 
     def main(self):
         """Run the main loop."""    
-        pause = False
+        pause = True
 
         clock = pygame.time.Clock()
         # Draw the whole screen initially
@@ -1077,7 +1081,7 @@ class Game(object):
                 while pause:
                     for event in pygame.event.get():
                         if event.type == pg.KEYDOWN:
-                            if event.key == pg.K_r:
+                            if event.key == pg.K_SPACE:
                                 pause = False
 
 
@@ -1090,56 +1094,45 @@ DY = [ 1, 0, 0,-1]
 
 # Dimensions of the map tiles
 MAP_TILE_WIDTH, MAP_TILE_HEIGHT = 24, 16
+MyCastle    = [ 0 , 0 , 0 , False , "User"]
+EnemyCastle = [ 0 , 0 , 0 , False , "Com1"]
+
+read_index = [0,0]
+turtle = [[],[]]
+
+My_stragedy_f = open( 'mine' , "r")
+Enemy_stragedy_f = 0 
+
+count = 0
+count_if = 0
+
+mode = "Dual"
+    
+
+if mode == "Dual":
+    Enemy_stragedy_f = open( 'enemy', "r")
+
+My_stragedy = My_stragedy_f.readlines()
+Enemy_stragedy = Enemy_stragedy_f.readlines()
+    
+#My_finish = False
+#Enemy_finish = False
+
+#pdb.set_trace()
+    
+#E = Enemy_stragedy.readline()
+#E_comment = E.split(" ")
+    
+
+SPRITE_CACHE = TileCache()
+Soldier_Cache = Soldier_Cache()
+MAP_CACHE = TileCache(MAP_TILE_WIDTH, MAP_TILE_HEIGHT)
+TILE_CACHE = TileCache(32, 32)
 
 
-if __name__ == "__main__":
+def run():
     #             man ,  wall , connon, ifFinish
-    MyCastle    = [ 0 , 0 , 0 , False , "User"]
-    EnemyCastle = [ 0 , 0 , 0 , False , "Com1"]
-
-    read_index = [0,0]
-    turtle = [[],[]]
-
-    My_stragedy_f = open( sys.argv[1] , "r")
-    Enemy_stragedy_f = 0 
-
-    count = 0
-    count_if = 0
-
-    if len(sys.argv) == 2:
-        print "Single player "
-        mode = "single"
-    elif len(sys.argv) == 3:
-        print "Dual players"
-        mode = "Dual"
-    else:
-        print "Input error"
-        print "python testgame.py <Players1's program> [Player2's program] "
-
-    #print 'Number of arguments:', len(sys.argv), 'arguments.'
-    #print 'Argument List:', str(sys.argv)
-
-
-
-    if mode == "Dual":
-        Enemy_stragedy_f = open( sys.argv[2] , "r")
-
-    My_stragedy = My_stragedy_f.readlines()
-    Enemy_stragedy = Enemy_stragedy_f.readlines()
     
-    #My_finish = False
-    #Enemy_finish = False
-
-    #pdb.set_trace()
-    
-    #E = Enemy_stragedy.readline()
-    #E_comment = E.split(" ")
-    
-
-    SPRITE_CACHE = TileCache()
-    Soldier_Cache = Soldier_Cache()
-    MAP_CACHE = TileCache(MAP_TILE_WIDTH, MAP_TILE_HEIGHT)
-    TILE_CACHE = TileCache(32, 32)
     pygame.init()
     pygame.display.set_mode((1224, 300))
     pygame.display.set_caption("Legoram")
