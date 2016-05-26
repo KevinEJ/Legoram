@@ -12,23 +12,27 @@ import pdb
 import random
 import time
 import sys
+import serial
 
 
 
-def myParse( Comment , my , enemy , action ):
+def myParse( Comment , my , enemy , action , player ):
     #global My_stragedy
 
     global count
     global count_if
 
     #M = My_stragedy.readline()
-    if my[3] == True:
-        return
-    M = Comment.readline()
-    if len(M)==0:
+    #if my[3] == True:
+    #    return
+    M = Comment[read_index[player]]
+    read_index[player] += 1
+    if read_index[player] >= len(Comment):
+        read_index[player] = 0
+    #if len(M)==0:
         #pdb.set_trace()
-        my[3] = True
-        return
+    #    my[3] = True
+    #    return
     M = M[:-1]
     M_comment = M.split(" ")
     while M_comment[0] == "":
@@ -57,7 +61,8 @@ def myParse( Comment , my , enemy , action ):
         else:
             while True:
                 #M = My_stragedy.readline()
-                M = Comment.readline()
+                M = Comment[read_index[player]]
+                read_index[player] += 1
                 M = M[:-1]
                 if M.split(" ")[0] == "e_else" and count_if == 0:
                     count_if = 0
@@ -74,11 +79,12 @@ def myParse( Comment , my , enemy , action ):
         Answer = getcondition( M_comment , my,enemy)
         if Answer == True: 
             #myParse()
-            myParse(Comment , my , enemy , action)
+            myParse(Comment , my , enemy , action , player)
         else:
             while True:
                 #M = My_stragedy.readline()
-                M = Comment.readline()
+                M = Comment[read_index[player]]
+                read_index[player] += 1
                 M = M[:-1]
                 if M.split(" ")[0] == "m_else" and count_if == 0:
                     count_if = 0
@@ -90,31 +96,44 @@ def myParse( Comment , my , enemy , action ):
                 #else:
                     #print "if else count error"
             #myParse()
-            myParse(Comment , my , enemy , action)
+            myParse(Comment , my , enemy , action , player)
     elif M_comment[0] == "e_else":
         while True:
             #M = My_stragedy.readline()
-            M = Comment.readline()
+            M = Comment[read_index[player]]
+            read_index[player] += 1
             M = M[:-1]
             if M.split(" ")[0] == "end":
                 break
         #myParse()
-        myParse(Comment , my , enemy , action)
+        myParse(Comment , my , enemy , action , player)
     elif M_comment[0] == "m_else":
         while True:
             #M = My_stragedy.readline()
-            M = Comment.readline()
+            M = Comment[read_index[player]]
+            read_index[player] += 1
             M = M[:-1]
             if M.split(" ")[0] == "end":
                 break
-        myParse(Comment , my , enemy , action)
+        myParse(Comment , my , enemy , action , player)
     elif M_comment[0] == "fire":
         #EnemyCastle[1] -= MyCastle[2]
         enemy[1] -= my[2]
         action['fire'] = True
     elif M_comment[0] == "end":
         #myParse()
-        myParse(Comment , my , enemy , action)
+        myParse(Comment , my , enemy , action, player)
+    elif M_comment[0] == "loop":
+        turtle[player].append([read_index[player],int(M_comment[1])])
+        myParse(Comment , my , enemy , action, player)
+    elif M_comment[0] == "end_loop":
+        if turtle[player][len(turtle[player])-1][1] == 1:
+            turtle[player].pop()
+        else:
+            turtle[player][len(turtle[player])-1][1] -= 1
+            read_index[player] = turtle[player][len(turtle[player])-1][0]
+        myParse(Comment , my , enemy , action, player)
+
     else:
         print "comment "  , count , " input error : " , M_comment[0] 
 
@@ -636,18 +655,36 @@ class Game(object):
         for y in range(2,17):
             self.remove(item+str(y))
 
-    def build_man(self,item):
+    def build_man(self, item, stage):
         if item == 'm_man':
             men = self.m_men
             x,y = 5,9
         else:
             men = self.e_men
             x,y = 45,9
-        if len(men)>0:                                  ####################demo
-            return
-        sprite = Soldier(item,(x,y+len(men)))
-        men[str(len(men))]=sprite
-        self.sprites.add(sprite)
+
+
+        if stage ==0:
+            if item+'_s' in self.items:
+                return
+            else:
+                if '0' in men:
+                    self.sprites.remove(men['0'])
+                    del men['0']
+                sprite = Sprite((x,y), SPRITE_CACHE['smoke.png'])
+                sprite.depth = 0
+                self.items[item+'_s'] = sprite 
+                self.sprites.add(sprite)
+        else:
+            self.remove(item+'_s')
+
+            
+            if len(men)>0:                                  ####################demo
+                return
+            sprite = Soldier(item,(x,y+len(men)))
+            sprite.depth = 0
+            men[str(len(men))]=sprite
+            self.sprites.add(sprite)
             
     def build(self, item , stage , stop):
         if item in ('m_wall','e_wall'):
@@ -763,19 +800,123 @@ class Game(object):
                 if self.e_men['0'].animation is None:
                     return self.e_men['0'].moveto(16,6,1) 
 
+    def update_round(self, count):
+        basicfont = pygame.font.SysFont(None, 48)
+        if count == 0:
+            text = basicfont.render('START!', True, (255, 255, 255))
+        else:
+            text = basicfont.render('Round '+str(count), True, (255, 255, 255))
+        textrect = text.get_rect()
+        textrect.centerx = self.screen.get_rect().centerx
+        textrect.centery = self.screen.get_rect().centery-60
+        #self.screen.fill((255, 255, 255))
+        background_copy = self.background.copy()
+        background_copy.blit(text, textrect)
+        self.screen.blit(background_copy,(0,0))
+        pygame.display.update(textrect)
+
+        if count == 0:
+            return False
+        else:
+            return True
+
+    def update_score(self):
+        background_copy = self.background.copy()
+        basicfont = pygame.font.SysFont(None, 24)
+        textrects = list()
+        
+        string = ''
+        if MyCastle[0] > 0 :
+            string = ' x'+str(MyCastle[0])
+            string += ' ' * (4 - len(string))
+        text = basicfont.render(string, True, (255, 255, 255))
+        textrect = text.get_rect()
+        textrect.centerx = 24*5+12
+        textrect.centery = 16*7+8
+        #self.screen.fill((255, 255, 255))
+        background_copy.blit(text, textrect)
+        textrects.append(textrect)
+        
+        string = ''
+        if MyCastle[1] > 0 :
+            string = 'x'+str(MyCastle[1])
+            string += ' ' * (4 - len(string))
+        text = basicfont.render(string, True, (255, 255, 255))
+        textrect = text.get_rect()
+        textrect.centerx = 24*14+18
+        textrect.centery = 16*7+8
+        #self.screen.fill((255, 255, 255))
+        background_copy.blit(text, textrect)
+        textrects.append(textrect)
+
+        string = ''
+        if MyCastle[2] > 0 :
+            string = 'x'+str(MyCastle[2])
+            string += ' ' * (4 - len(string))
+        text = basicfont.render(string, True, (255, 255, 255))
+        textrect = text.get_rect()
+        textrect.centerx = 24*18
+        textrect.centery = 16*13+8
+        #self.screen.fill((255, 255, 255))
+        background_copy.blit(text, textrect)
+        textrects.append(textrect)
+
+        string = ''
+        if EnemyCastle[0] > 0 :
+            string = 'x'+str(EnemyCastle[0])
+            string += ' ' * (4 - len(string))
+        text = basicfont.render(string, True, (255, 255, 255))
+        textrect = text.get_rect()
+        textrect.centerx = 24*45+12
+        textrect.centery = 16*7+8
+        #self.screen.fill((255, 255, 255))
+        background_copy.blit(text, textrect)
+        textrects.append(textrect)
+
+        string = ''
+        if EnemyCastle[1] > 0 :
+            string = 'x'+str(EnemyCastle[1])
+            string += ' ' * (3 - len(string))
+        text = basicfont.render(string, True, (255, 255, 255))
+        textrect = text.get_rect()
+        textrect.centerx = 24*36
+        textrect.centery = 16*7+8
+        #self.screen.fill((255, 255, 255))
+        background_copy.blit(text, textrect)
+        textrects.append(textrect)
+
+        string = ''
+        if EnemyCastle[2] > 0 :
+            string = 'x'+str(EnemyCastle[2])
+            string += ' ' * (4 - len(string))
+        text = basicfont.render(string, True, (255, 255, 255))
+        textrect = text.get_rect()
+        textrect.centerx = 24*32+12
+        textrect.centery = 16*13+8
+        #self.screen.fill((255, 255, 255))
+        background_copy.blit(text, textrect)
+        textrects.append(textrect)
+
+
+
+
+        self.screen.blit(background_copy,(0,0))
+        pygame.display.update(textrects)
+
 
     def main(self):
-        """Run the main loop."""
+        """Run the main loop."""    
+        pause = False
 
         clock = pygame.time.Clock()
         # Draw the whole screen initially
 
         # Display some text
-        #font = pygame.font.Font(None, 36)
-        #text = font.render("Hello There", 1, (10, 10, 10))
-        #textpos = text.get_rect()
-        #textpos.centerx = self.background.get_rect().centerx
-        #self.background.blit(text, textpos)
+        basicfont = pygame.font.SysFont(None, 48)
+        text = basicfont.render('Round 99', True, (255, 255, 255))
+        textrect = text.get_rect()
+        textrect.centerx = self.screen.get_rect().centerx
+        textrect.centery = self.screen.get_rect().centery-60
 
         self.screen.blit(self.background, (0, 0))
         self.overlays.draw(self.screen)
@@ -803,50 +944,52 @@ class Game(object):
             m_action['detect'] = None
             e_action['detect'] = None
             print "=============  " , count , "round  =========================="
-            myParse(My_stragedy , MyCastle , EnemyCastle, m_action)
-            if mode == "Dual":
-                myParse(Enemy_stragedy , EnemyCastle , MyCastle, e_action)
-            elif mode == "single":
-                move = random.randint(0,3)
-                if move == 0 :
-                    EnemyCastle[0] += 1
-                elif move == 1 :
-                    EnemyCastle[1] += EnemyCastle[0]
-                elif move == 2 :
-                    EnemyCastle[2] += EnemyCastle[0]
-                elif move == 3 :
-                    MyCastle[1] -= EnemyCastle[2] 
-            else:
-                print "mode error"
+            if self.update_round(count):
+                
+                myParse(My_stragedy , MyCastle , EnemyCastle, m_action, 0)
+                if mode == "Dual":
+                    myParse(Enemy_stragedy , EnemyCastle , MyCastle, e_action, 1)
+                elif mode == "single":
+                    move = random.randint(0,3)
+                    if move == 0 :
+                        EnemyCastle[0] += 1
+                    elif move == 1 :
+                        EnemyCastle[1] += EnemyCastle[0]
+                    elif move == 2 :
+                        EnemyCastle[2] += EnemyCastle[0]
+                    elif move == 3 :
+                        MyCastle[1] -= EnemyCastle[2] 
+                else:
+                    print "mode error"
 
-            pygame.display.set_caption("Round "+str(count))
-            count += 1     
+                
 
-            if m_action['build'] == 'man':
-                self.build_man('m_man')
-            if e_action['build'] == 'man':
-                self.build_man('e_man')
+                
+                print MyCastle
+                print EnemyCastle
+                print " " 
 
-            print MyCastle
-            print EnemyCastle
-            print " " 
-
-
-            #animation
+                #animation
 
             round_clock=0
             stage_b = 0
             stage_f = 0
             m_detect_ret = False
             e_detect_ret = False
+            count += 1     
+
             while round_clock<self.round_cycle:
                 round_clock += 1
                 if m_win:
                     raw_input('Press to end')
 
-                if round_clock > self.round_cycle*0.2:
+                if round_clock == 15:
+                    self.screen.blit(self.background,(0,0))
+                    pygame.display.update(textrect)
+                if round_clock == int(self.round_cycle*0.13):
                     stage_b = 1
-                if round_clock > self.round_cycle*0.04:
+                    self.update_score()
+                if round_clock == int(self.round_cycle*0.04):
                     stage_f = 1
                 
 
@@ -878,6 +1021,13 @@ class Game(object):
                     if self.detect('e_',e_detect_ret):
                         e_detect_ret = True
 
+                if m_action['build'] == 'man':
+                    self.build_man('m_man', stage_b)
+                if e_action['build'] == 'man':
+                    self.build_man('e_man', stage_b)
+
+
+
 
                 # Don't clear shadows and overlays, only sprites.
                 self.sprites.clear(self.screen, self.background)
@@ -899,6 +1049,7 @@ class Game(object):
                 pygame.display.update(dirty)
                 # Wait for one tick of the game clock
                 clock.tick(15)
+               
 
                 if m_win : 
                     # Display some text
@@ -921,6 +1072,13 @@ class Game(object):
                         self.game_over = True
                     elif event.type == pg.KEYDOWN:
                         self.pressed_key = event.key
+                        if event.key == pg.K_SPACE:
+                            pause = True
+                while pause:
+                    for event in pygame.event.get():
+                        if event.type == pg.KEYDOWN:
+                            if event.key == pg.K_r:
+                                pause = False
 
 
 
@@ -939,12 +1097,13 @@ if __name__ == "__main__":
     MyCastle    = [ 0 , 0 , 0 , False , "User"]
     EnemyCastle = [ 0 , 0 , 0 , False , "Com1"]
 
+    read_index = [0,0]
+    turtle = [[],[]]
 
+    My_stragedy_f = open( sys.argv[1] , "r")
+    Enemy_stragedy_f = 0 
 
-    My_stragedy = open( sys.argv[1] , "r")
-    Enemy_stragedy = 0 
-
-    count = 1
+    count = 0
     count_if = 0
 
     if len(sys.argv) == 2:
@@ -963,7 +1122,10 @@ if __name__ == "__main__":
 
 
     if mode == "Dual":
-        Enemy_stragedy = open( sys.argv[2] , "r")
+        Enemy_stragedy_f = open( sys.argv[2] , "r")
+
+    My_stragedy = My_stragedy_f.readlines()
+    Enemy_stragedy = Enemy_stragedy_f.readlines()
     
     #My_finish = False
     #Enemy_finish = False

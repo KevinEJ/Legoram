@@ -1,7 +1,10 @@
-build man
-build man
-build man
+loop 3
+    build man
+    loop 2
+        build wall
+    end_loop
+end_loop
 build wall
 build cannon
 build wall
-fire
+build man
