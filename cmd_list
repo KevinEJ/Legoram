@@ -1,0 +1,9 @@
+loop 3
+end_loop
+build cannon
+build wall
+build man
+e_if m_cannon > e_cannon
+e_else
+m_if m_man > m_wall
+m_else
