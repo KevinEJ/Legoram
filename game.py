@@ -272,7 +272,7 @@ class Shadow(pygame.sprite.Sprite):
 
     def __init__(self, owner):
         pygame.sprite.Sprite.__init__(self)
-        self.image = SPRITE_CACHE["shadow.png"][0][0]
+        self.image = SPRITE_CACHE["sprites/shadow.png"][0][0]
         self.image.set_alpha(64)
         self.rect = self.image.get_rect()
         self.owner = owner
@@ -348,7 +348,7 @@ class Soldier(Sprite):
     is_player = False
 
     def __init__(self, item, pos=(1, 1)):
-        self.frames = Soldier_Cache[item+".png"]
+        self.frames = Soldier_Cache["sprites/"+item+".png"]
         Sprite.__init__(self, pos)
         self.direction = 0
         self.animation = None
@@ -392,7 +392,7 @@ class Player(Sprite):
     is_player = True
 
     def __init__(self, pos=(1, 1)):
-        self.frames = SPRITE_CACHE["player.png"]
+        self.frames = SPRITE_CACHE["sprites/player.png"]
         Sprite.__init__(self, pos)
         self.direction = 2
         self.animation = None
@@ -549,6 +549,7 @@ class Game(object):
         self.castle()
         self.m_men = dict()
         self.e_men = dict()
+        self.stop_game = False
 
     def use_level(self, level):
         """Set the level as the current one."""
@@ -605,12 +606,12 @@ class Game(object):
     def castle(self):
         for x in range (0,4):
             for y in range (0,6):
-                sprite = Castle((x+1,y+6), MAP_CACHE['castle.png'])
+                sprite = Castle((x+1,y+6), MAP_CACHE['sprites/castle.png'])
                 sprite.xy_image(x,y)
                 sprite.depth=x+3*y
                 self.sprites.add(sprite)
 
-                sprite = Castle((x+46,y+6), MAP_CACHE['castle.png'])
+                sprite = Castle((x+46,y+6), MAP_CACHE['sprites/castle.png'])
                 sprite.xy_image(x,y)
                 sprite.depth=x+3*y
                 self.sprites.add(sprite)
@@ -629,7 +630,7 @@ class Game(object):
                 elif item+str(y)+'_s' in self.items:
                     continue
                 else:
-                    sprite = Sprite((x,y), SPRITE_CACHE['smoke.png'])
+                    sprite = Sprite((x,y), SPRITE_CACHE['sprites/smoke.png'])
                     self.items[item+str(y)+'_s'] = sprite 
                     self.sprites.add(sprite)
 
@@ -649,7 +650,7 @@ class Game(object):
                         i,j = 0,2
 
                 if item+str(y) not in self.items and not stop:
-                    sprite = Castle((x,y), SPRITE_CACHE['wall.png'])
+                    sprite = Castle((x,y), SPRITE_CACHE['sprites/wall.png'])
                     sprite.xy_image(i,j)
                     self.items[item+str(y)] = sprite #m_wall2
                     self.sprites.add(sprite)
@@ -675,7 +676,7 @@ class Game(object):
                 if '0' in men:
                     self.sprites.remove(men['0'])
                     del men['0']
-                sprite = Sprite((x,y), SPRITE_CACHE['smoke.png'])
+                sprite = Sprite((x,y), SPRITE_CACHE['sprites/smoke.png'])
                 sprite.depth = 0
                 self.items[item+'_s'] = sprite 
                 self.sprites.add(sprite)
@@ -709,12 +710,12 @@ class Game(object):
         if stage == 0:
             if item+'_s' in self.items:
                 return
-            sprite = Sprite((x,y), SPRITE_CACHE['smoke.png'])
+            sprite = Sprite((x,y), SPRITE_CACHE['sprites/smoke.png'])
             self.items[item+'_s']=sprite
             self.sprites.add(sprite)
         elif stage == 1:
             self.remove(item+'_s')
-            sprite = Sprite((x,y), SPRITE_CACHE[item+'.png'])
+            sprite = Sprite((x,y), SPRITE_CACHE["sprites/"+item+'.png'])
             sprite.move(-7,0)
             self.items[item]=sprite
             self.sprites.add(sprite)
@@ -738,7 +739,7 @@ class Game(object):
             life = MyCastle[1]
         if stage == 0:
             if bullet not in self.items:
-                sprite = Sprite((x,y), SPRITE_CACHE[bullet+'.png'])
+                sprite = Sprite((x,y), SPRITE_CACHE["sprites/"+bullet+'.png'])
                 self.items[bullet]=sprite
                 sprite.move(0,-8)
                 self.sprites.add(sprite)
@@ -749,7 +750,7 @@ class Game(object):
 
             if item in self.items:
                 return 0
-            sprite = Sprite((x,y), SPRITE_CACHE[item+'.png'])
+            sprite = Sprite((x,y), SPRITE_CACHE["sprites/"+item+'.png'])
             sprite.move(0,-8)
             self.items[item]=sprite
             self.sprites.add(sprite)
@@ -807,9 +808,9 @@ class Game(object):
     def update_round(self, count):
         basicfont = pygame.font.SysFont(None, 48)
         if count == 0:
-            text = basicfont.render('START!', True, (255, 255, 255))
+            text = basicfont.render('press to start', True, (255/1.2, 255/1.2, 255/1.2))
         else:
-            text = basicfont.render('Round '+str(count), True, (255, 255, 255))
+            text = basicfont.render('Round '+str(count), True, (255/1.2, 255/1.2, 255/1.2))
         textrect = text.get_rect()
         textrect.centerx = self.screen.get_rect().centerx
         textrect.centery = self.screen.get_rect().centery-60
@@ -917,7 +918,7 @@ class Game(object):
 
         # Display some text
         basicfont = pygame.font.SysFont(None, 48)
-        text = basicfont.render('Round 99', True, (255, 255, 255))
+        text = basicfont.render('press to start', True, (255/1.2, 255/1.2, 255/1.2))
         textrect = text.get_rect()
         textrect.centerx = self.screen.get_rect().centerx
         textrect.centery = self.screen.get_rect().centery-60
@@ -982,7 +983,7 @@ class Game(object):
             e_detect_ret = False
             count += 1     
 
-            while round_clock<self.round_cycle:
+            while round_clock<self.round_cycle and not self.game_over:
                 round_clock += 1
                 if m_win:
                     raw_input('Press to end')
@@ -1058,7 +1059,7 @@ class Game(object):
                 if m_win : 
                     # Display some text
                     basicfont = pygame.font.SysFont(None, 48)
-                    text = basicfont.render('You Win!', True, (255, 0, 0))
+                    text = basicfont.render('You Win!', True, (255/1.2, 255/1.2, 255/1.2))
                     textrect = text.get_rect()
                     textrect.centerx = self.screen.get_rect().centerx
                     textrect.centery = self.screen.get_rect().centery
@@ -1066,23 +1067,53 @@ class Game(object):
                     #self.screen.fill((255, 255, 255))
                     self.screen.blit(text, textrect)
 
-                    image = pygame.image.load('crash.png').convert_alpha()
+                    image = pygame.image.load('sprites/crash.png').convert_alpha()
                     self.screen.blit(image,(46*24,85))
                     pygame.display.flip()
+                    self.game_over = True
+                    pause = True
+
+                elif e_win : 
+                    # Display some text
+                    basicfont = pygame.font.SysFont(None, 48)
+                    text = basicfont.render('You Lose!', True, (255/1.2, 255/1.2, 255/1.2))
+                    textrect = text.get_rect()
+                    textrect.centerx = self.screen.get_rect().centerx
+                    textrect.centery = self.screen.get_rect().centery
+ 
+                    #self.screen.fill((255, 255, 255))
+                    self.screen.blit(text, textrect)
+
+                    image = pygame.image.load('sprites/crash.png').convert_alpha()
+                    self.screen.blit(image,(24,85))
+                    pygame.display.flip()
+                    self.game_over = True
+                    pause = True
 
                 # Process pygame events
                 for event in pygame.event.get():
                     if event.type == pg.QUIT:
                         self.game_over = True
+                        self.stop_game = True
                     elif event.type == pg.KEYDOWN:
                         self.pressed_key = event.key
                         if event.key == pg.K_SPACE:
                             pause = True
+                        if event.key == pg.K_ESCAPE:
+                            self.game_over = True
+                            self.stop_game = True
+                            pause = False
                 while pause:
                     for event in pygame.event.get():
                         if event.type == pg.KEYDOWN:
+                            if event.key == pg.K_ESCAPE:
+                                self.game_over = True
+                                self.stop_game = True
+                                pause = False
                             if event.key == pg.K_SPACE:
                                 pause = False
+
+        return self.stop_game
 
 
 
@@ -1138,6 +1169,6 @@ def run():
     pygame.display.set_caption("Legoram")
 
 
-    Game().main()
+    return Game().main()
 
 
