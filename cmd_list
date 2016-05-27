@@ -5,5 +5,7 @@ build wall
 build man
 e_if m_cannon > e_cannon
 e_else
+end
 m_if m_man > m_wall
 m_else
+end

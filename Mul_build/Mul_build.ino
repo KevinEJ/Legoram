@@ -1,30 +1,37 @@
 #include <Wire.h>
-#include <String.h>
 
 #define INPin 3
 #define OUTPin 5
-#define inLED 13
+#define paraPin 1
 #define rLED 9
 #define gLED 8
 #define bLED 7
 
-#define THIS_ADDR 22
+#define THIS_ADDR 36
 #define MASTER_ADDR 8
 
 bool dataSent = false;
-/*char mycmd[26] = {'b','u','i','l','d',' ',' ',' ',
-                  'c','a','n','n','o','n',' ',' ',
+char can_cmd[26] = {'b','u','i','l','d',' ',
+                  'c','a','n','n','o','n',' ',' ',' ',' ',
                   ' ',' ',' ',' ',' ',' ',' ',' ',
-                  '\n','!'};*/
-char mycmd[26] = {'b','u','i','l','d',' ',' ',' ',
-                  'w','a','l','l',' ',' ',' ',' ',
+                  '\n',THIS_ADDR};
+char wal_cmd[26] = {'b','u','i','l','d',' ',
+                  'w','a','l','l',' ',' ',' ',' ',' ',' ',
                   ' ',' ',' ',' ',' ',' ',' ',' ',
-                  '\n','!'};
+                  '\n',THIS_ADDR};
+char man_cmd[26] = {'b','u','i','l','d',' ',
+                  'm','a','n',' ',' ',' ',' ',' ',' ',' ',
+                  ' ',' ',' ',' ',' ',' ',' ',' ',
+                  '\n',THIS_ADDR};
+
+char invalid_cmd[26] = {'E','r','r','o','r',' ',
+                  'p','a','r','a','m','e','t','e','r',' ',
+                  ' ',' ',' ',' ',' ',' ',' ',' ',
+                  '\n',THIS_ADDR};
 
 void setup() {
- pinMode(inLED, OUTPUT);
- digitalWrite(inLED, LOW);
  pinMode(INPin, INPUT);
+ pinMode(paraPin, INPUT);
  pinMode(OUTPin, OUTPUT);
  digitalWrite(OUTPin, LOW);
  pinMode(rLED, OUTPUT);
@@ -39,11 +46,36 @@ void setup() {
  dataSent = false;
 }
 
+bool whetherHIGH(int pin){
+  bool allTrue = false;
+  if(digitalRead(pin)==HIGH)
+    allTrue = true;
+  int i = 0;
+  for(;i<1499;i++){
+    delay(1);
+    if(allTrue == true && digitalRead(pin)==HIGH)
+      allTrue = true;
+    else{
+      allTrue = false;
+      break;
+    }
+  }
+  return allTrue;
+}
+
 void loop() {
- if (digitalRead(INPin) == HIGH && dataSent == false){
+ if (whetherHIGH(INPin) && dataSent == false){
    Wire.beginTransmission(MASTER_ADDR);
-   Wire.write(mycmd);
+   if(analogRead(paraPin)>=938)
+    Wire.write(can_cmd);
+   else if(analogRead(paraPin)<=85)
+    Wire.write(man_cmd);
+   else if(analogRead(paraPin)<597 && analogRead(paraPin)>427)
+    Wire.write(wal_cmd);
+   else
+    Wire.write(invalid_cmd);
    Wire.endTransmission();
+   digitalWrite(OUTPin,HIGH);
    dataSent = true;
    for(int i =1; i<=3;i++){
     digitalWrite(gLED,HIGH);
@@ -51,43 +83,10 @@ void loop() {
     digitalWrite(gLED,LOW);
     delay(250);
    }
-   digitalWrite(OUTPin,HIGH);
  }
  else if(dataSent = true){
   digitalWrite(OUTPin,HIGH);
-  digitalWrite(inLED,LOW);
  }
- else{
-  digitalWrite(OUTPin,LOW);
-  digitalWrite(inLED,LOW);
- }
- /*digitalWrite(rLED,HIGH);
- delay(500);
- digitalWrite(rLED,LOW);
- digitalWrite(gLED,HIGH);
- delay(500);
- digitalWrite(gLED,LOW);
- digitalWrite(bLED,HIGH);
- delay(500);
- digitalWrite(rLED,HIGH);
- digitalWrite(gLED,HIGH);
- digitalWrite(bLED,LOW);
- delay(500);
- digitalWrite(rLED,HIGH);
- digitalWrite(gLED,LOW);
- digitalWrite(bLED,HIGH);
- delay(500);
- digitalWrite(rLED,LOW);
- digitalWrite(gLED,HIGH);
- digitalWrite(bLED,HIGH);
- delay(500);
- digitalWrite(rLED,HIGH);
- digitalWrite(gLED,HIGH);
- digitalWrite(bLED,HIGH);
- delay(500);
- digitalWrite(rLED,LOW);
- digitalWrite(gLED,LOW);
- digitalWrite(bLED,LOW);*/
 }
 
 void receiveEvent(int howMany){
