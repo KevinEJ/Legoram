@@ -91,14 +91,25 @@ void loop() {
 
 void receiveEvent(int howMany){
  while (Wire.available() > 0){
-   Wire.read();
-   //do receive stuff
-   /*digitalWrite(inLED,HIGH);
-   delay(500);
-   digitalWrite(inLED,LOW);
-   delay(500);
-   digitalWrite(inLED,HIGH);
-   delay(500);
-   digitalWrite(inLED,LOW);*/
+   char c = Wire.read();
+   if(c == 'R'){
+      LEDrun();
+   }
+   else if(c == 'W'){
+      LEDwin(); 
+   }
  }
+}
+
+void LEDrun(){
+   digitalWrite(rLED,LOW);
+   digitalWrite(gLED,LOW);
+   digitalWrite(bLED,LOW);
+   delay(200);
+   digitalWrite(rLED,LOW);
+   digitalWrite(gLED,LOW);
+   digitalWrite(bLED,LOW);
+   delay(200);
+   digitalWrite(gLED,LOW);
+   delay(200);
 }

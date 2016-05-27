@@ -41,6 +41,8 @@ def myParse( Comment , my , enemy , action , player ):
     M_comment = M.split(" ")
     while M_comment[0] == "":
         M_comment.remove("")
+    while M_comment[len(M_comment)-1] == "":
+        M_comment.remove("")
     print "[" , count , "]" , my[4] , " -> " , M_comment 
     if M_comment[0] == "build":
         if M_comment[1] == "man":
@@ -84,8 +86,8 @@ def myParse( Comment , my , enemy , action , player ):
         if Answer == True: 
             #myParse()
             if player ==0:
-                #s.write(chr(read_index[0]))
-                print str(read_index[0])+"<<<<<<<"
+                s.write(chr(read_index[0]+1))
+                print str(read_index[0]+1)+"<<<<<<<"
             myParse(Comment , my , enemy , action , player)
         else:
             while True:
@@ -104,8 +106,8 @@ def myParse( Comment , my , enemy , action , player ):
                     #print "if else count error"
             #myParse()
             if player ==0:
-                #s.write(chr(read_index[0]))
-                print str(read_index[0])+"<<<<<<<"
+                s.write(chr(read_index[0]+1))
+                print str(read_index[0]+1)+"<<<<<<<"
             myParse(Comment , my , enemy , action , player)
     elif M_comment[0] == "e_else":
         while True:
@@ -117,8 +119,8 @@ def myParse( Comment , my , enemy , action , player ):
                 break
         #myParse()
         if player ==0:
-            #s.write(chr(read_index[0]))
-            print str(read_index[0])+"<<<<<<<"
+            s.write(chr(read_index[0]+1))
+            print str(read_index[0]+1)+"<<<<<<<"
         myParse(Comment , my , enemy , action , player)
     elif M_comment[0] == "m_else":
         while True:
@@ -129,8 +131,8 @@ def myParse( Comment , my , enemy , action , player ):
             if M.split(" ")[0] == "end":
                 break
         if player ==0:
-            #s.write(chr(read_index[0]))
-            print str(read_index[0])+"<<<<<<<"
+            s.write(chr(read_index[0]+1))
+            print str(read_index[0]+1)+"<<<<<<<"
         myParse(Comment , my , enemy , action , player)
     elif M_comment[0] == "fire":
         #EnemyCastle[1] -= MyCastle[2]
@@ -139,14 +141,14 @@ def myParse( Comment , my , enemy , action , player ):
     elif M_comment[0] == "end":
         #myParse()
         if player ==0:
-            #s.write(chr(read_index[0]))
-            print str(read_index[0])+"<<<<<<<"
+            s.write(chr(read_index[0]+1))
+            print str(read_index[0]+1)+"<<<<<<<"
         myParse(Comment , my , enemy , action, player)
     elif M_comment[0] == "loop":
         turtle[player].append([read_index[player],int(M_comment[1])])
         if player ==0:
-            #s.write(chr(read_index[0]))
-            print str(read_index[0])+"<<<<<<<"
+            s.write(chr(read_index[0]+1))
+            print str(read_index[0]+1)+"<<<<<<<"
         myParse(Comment , my , enemy , action, player)
     elif M_comment[0] == "end_loop":
         if turtle[player][len(turtle[player])-1][1] == 1:
@@ -155,8 +157,8 @@ def myParse( Comment , my , enemy , action , player ):
             turtle[player][len(turtle[player])-1][1] -= 1
             read_index[player] = turtle[player][len(turtle[player])-1][0]
         if player ==0:
-            #s.write(chr(read_index[0]))
-            print str(read_index[0])+"<<<<<<<"
+            s.write(chr(read_index[0]+1))
+            print str(read_index[0]+1)+"<<<<<<<"
         myParse(Comment , my , enemy , action, player)
 
     else:
@@ -971,8 +973,8 @@ class Game(object):
             e_action['detect'] = None
             print "=============  " , count , "round  =========================="
             if self.update_round(count):
-                #s.write(chr(read_index[0]))
-                print str(read_index[0])+"<<<<<<<"
+                s.write(chr(read_index[0]+1))
+                print str(read_index[0]+1)+"<<<<<<<"
                 myParse(My_stragedy , MyCastle , EnemyCastle, m_action, 0)
                 if mode == "Dual":
                     myParse(Enemy_stragedy , EnemyCastle , MyCastle, e_action, 1)
@@ -1165,7 +1167,7 @@ mode = "Dual"
 if mode == "Dual":
     Enemy_stragedy_f = open( 'enemy', "r")
 
-My_stragedy = My_stragedy_f.readlines()
+My_stragedy = [" "]
 Enemy_stragedy = Enemy_stragedy_f.readlines()
     
 #My_finish = False
@@ -1182,12 +1184,16 @@ Soldier_Cache = Soldier_Cache()
 MAP_CACHE = TileCache(MAP_TILE_WIDTH, MAP_TILE_HEIGHT)
 TILE_CACHE = TileCache(32, 32)
 
-#s = serial.Serial('COM3',9600)
+s = serial.Serial()
 
 
-def run():
+def run(code , s_out):
+    global My_stragedy
+    global s
     #             man ,  wall , connon, ifFinish
     
+    s = s_out
+    My_stragedy = code
     pygame.init()
     pygame.display.set_mode((1224, 300))
     pygame.display.set_caption("Legoram")

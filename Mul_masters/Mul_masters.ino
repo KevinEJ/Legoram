@@ -40,7 +40,20 @@ void loop() {
  digitalWrite(inLED, LOW);
  digitalWrite(rLED, LOW);
  digitalWrite(bLED, LOW);*/
- checkFinished();
+ int LEDblock = int(Serial.read());
+ if(LEDblock == 0){
+    for(int j=0;j<20;j++){
+      for(int i=0;i<26;i++){
+        Serial.write(data[j][i]);
+      }
+    }
+ }
+ else{
+    char LED_ADDR = data[LED_block-1][25];
+    Wire.beginTransmission(LED_ADDR);
+    Wire.write("run");
+    Wire.endTransmission();
+ }
 }
 
 void receiveEvent(int howMany){
@@ -69,11 +82,6 @@ void receiveEvent(int howMany){
  Serial.println();
  Serial.println();
  Serial.println();*/
- for(int j=0;j<20;j++){
-    for(int i=0;i<26;i++){
-      Serial.write(data[j][i]);
-    }
- }
  delay(1000);
  digitalWrite(inLED, LOW);
 }
@@ -98,6 +106,7 @@ void checkFinished(){
  delay(1499-i);
  digitalWrite(gLED,LOW);
  if(allTrue == true){
+  data
   /*if(blockCount==0)
       Serial.println("Error end with 0 block");
   else
