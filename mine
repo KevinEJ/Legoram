@@ -1,9 +1,16 @@
-loop 3
+loop 1
     build man
-    loop 2
-        build cannon
+    loop 1
+        build wall
     end_loop
 end_loop
+e_if m_man > e_wall
+    fire
+    build wall
+e_else
+    build man
+end
+fire
 build wall
 build cannon
 build wall
