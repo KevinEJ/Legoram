@@ -12,7 +12,19 @@ root.withdraw()
 root.mainloop()
 
 stop = False
+
+
+
+
+
+##############################
+#         main loop          #
+##############################
 while not stop:
+
+	#generate() here
+
+
 	game = reload(game)
 	stop = game.run()
 
