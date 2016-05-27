@@ -4,7 +4,7 @@ import binascii
 def gen(s):
     #os.remove("mine")      
     #f = open("mine" , 'w' )
-    s.write(0)
+    #s.write("0")
     acode = s.read(20*26)
     output = []
     string = ""

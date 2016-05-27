@@ -13,6 +13,7 @@
 byte blockCount = 0;
 char data[20][26];
 bool maybeFinished = false;
+bool start_exe = false;
 
 void setup() {
  pinMode(INPin, INPUT);
@@ -36,8 +37,13 @@ void setup() {
 }
 
 void loop() {
- int LEDblock = int(Serial.read());
+ int LEDblock = Serial.read();
+
  if(LEDblock == 0){
+    start_exe = true;
+  }
+ 
+ if(!start_exe){
     for(int i =0;i<3;i++){
        digitalWrite(gLED,HIGH);
        delay(250);
@@ -48,14 +54,6 @@ void loop() {
       for(int i=0;i<26;i++){
         Serial.write(data[j][i]);
       }
-    }
- }
- else if(LEDblock == -1){
-    for(int i =0;i<3;i++){
-       digitalWrite(rLED,HIGH);
-       delay(250);
-       digitalWrite(rLED,LOW);
-       delay(250);
     }
  }
  else{

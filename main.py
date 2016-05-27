@@ -49,6 +49,7 @@ stop = False
 ##############################
 #         main loop          #
 ##############################
+s.write(chr(0))
 while not stop:
 
 	#generate() here
