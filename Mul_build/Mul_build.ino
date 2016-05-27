@@ -103,13 +103,48 @@ void receiveEvent(int howMany){
 
 void LEDrun(){
    digitalWrite(rLED,LOW);
+   digitalWrite(gLED,HIGH);
+   digitalWrite(bLED,HIGH);
+   delay(200);
+   digitalWrite(rLED,LOW);
    digitalWrite(gLED,LOW);
+   digitalWrite(bLED,HIGH);
+   delay(200);
+   digitalWrite(rLED,LOW);
+   digitalWrite(gLED,HIGH);
    digitalWrite(bLED,LOW);
    delay(200);
    digitalWrite(rLED,LOW);
    digitalWrite(gLED,LOW);
    digitalWrite(bLED,LOW);
-   delay(200);
+}
+
+void LEDwin(){
+   digitalWrite(rLED,HIGH);
    digitalWrite(gLED,LOW);
-   delay(200);
+   digitalWrite(bLED,LOW);
+   delay(100);
+   digitalWrite(rLED,HIGH);
+   digitalWrite(gLED,HIGH);
+   digitalWrite(bLED,LOW);
+   delay(100);
+   digitalWrite(rLED,LOW);
+   digitalWrite(gLED,HIGH);
+   digitalWrite(bLED,LOW);
+   delay(100);
+   digitalWrite(rLED,LOW);
+   digitalWrite(gLED,HIGH);
+   digitalWrite(bLED,HIGH);
+   delay(100);
+   digitalWrite(rLED,LOW);
+   digitalWrite(gLED,LOW);
+   digitalWrite(bLED,HIGH);
+   delay(100);
+   digitalWrite(rLED,HIGH);
+   digitalWrite(gLED,LOW);
+   digitalWrite(bLED,HIGH);
+   delay(100);
+   digitalWrite(rLED,LOW);
+   digitalWrite(gLED,LOW);
+   digitalWrite(bLED,LOW);
 }

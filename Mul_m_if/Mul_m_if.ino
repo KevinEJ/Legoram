@@ -234,14 +234,60 @@ void loop() {
 
 void receiveEvent(int howMany){
  while (Wire.available() > 0){
-   Wire.read();
-   //do receive stuff
-   /*digitalWrite(inLED,HIGH);
-   delay(500);
-   digitalWrite(inLED,LOW);
-   delay(500);
-   digitalWrite(inLED,HIGH);
-   delay(500);
-   digitalWrite(inLED,LOW);*/
+   char c = Wire.read();
+   if(c == 'R'){
+      LEDrun();
+   }
+   else if(c == 'W'){
+      LEDwin(); 
+   }
  }
+}
+
+void LEDrun(){
+   digitalWrite(rLED,LOW);
+   digitalWrite(gLED,HIGH);
+   digitalWrite(bLED,HIGH);
+   delay(200);
+   digitalWrite(rLED,LOW);
+   digitalWrite(gLED,LOW);
+   digitalWrite(bLED,HIGH);
+   delay(200);
+   digitalWrite(rLED,LOW);
+   digitalWrite(gLED,HIGH);
+   digitalWrite(bLED,LOW);
+   delay(200);
+   digitalWrite(rLED,LOW);
+   digitalWrite(gLED,LOW);
+   digitalWrite(bLED,LOW);
+}
+
+void LEDwin(){
+   digitalWrite(rLED,HIGH);
+   digitalWrite(gLED,LOW);
+   digitalWrite(bLED,LOW);
+   delay(100);
+   digitalWrite(rLED,HIGH);
+   digitalWrite(gLED,HIGH);
+   digitalWrite(bLED,LOW);
+   delay(100);
+   digitalWrite(rLED,LOW);
+   digitalWrite(gLED,HIGH);
+   digitalWrite(bLED,LOW);
+   delay(100);
+   digitalWrite(rLED,LOW);
+   digitalWrite(gLED,HIGH);
+   digitalWrite(bLED,HIGH);
+   delay(100);
+   digitalWrite(rLED,LOW);
+   digitalWrite(gLED,LOW);
+   digitalWrite(bLED,HIGH);
+   delay(100);
+   digitalWrite(rLED,HIGH);
+   digitalWrite(gLED,LOW);
+   digitalWrite(bLED,HIGH);
+   delay(100);
+   digitalWrite(rLED,LOW);
+   digitalWrite(gLED,LOW);
+   digitalWrite(bLED,LOW);
 }
