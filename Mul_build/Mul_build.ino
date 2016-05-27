@@ -1,15 +1,5 @@
-/**
-*
-* Sample Multi Master I2C implementation.  Sends a button state over I2C to another
-* Arduino, which flashes an LED correspinding to button state.
-* 
-* Connections: Arduino analog pins 4 and 5 are connected between the two Arduinos, 
-* with a 1k pullup resistor connected to each line.  Connect a push button between 
-* digital pin 10 and ground, and an LED (with a resistor) to digital pin 9.
-* 
-*/
-
 #include <Wire.h>
+#include <String.h>
 
 #define INPin 3
 #define OUTPin 5
@@ -18,10 +8,18 @@
 #define gLED 8
 #define bLED 7
 
-#define THIS_ADDR 6
-#define MASTER_ADDR 0
+#define THIS_ADDR 22
+#define MASTER_ADDR 8
 
 bool dataSent = false;
+/*char mycmd[26] = {'b','u','i','l','d',' ',' ',' ',
+                  'c','a','n','n','o','n',' ',' ',
+                  ' ',' ',' ',' ',' ',' ',' ',' ',
+                  '\n','!'};*/
+char mycmd[26] = {'b','u','i','l','d',' ',' ',' ',
+                  'w','a','l','l',' ',' ',' ',' ',
+                  ' ',' ',' ',' ',' ',' ',' ',' ',
+                  '\n','!'};
 
 void setup() {
  pinMode(inLED, OUTPUT);
@@ -44,13 +42,15 @@ void setup() {
 void loop() {
  if (digitalRead(INPin) == HIGH && dataSent == false){
    Wire.beginTransmission(MASTER_ADDR);
-   Wire.write("2h  ");
-   Wire.write(THIS_ADDR);
+   Wire.write(mycmd);
    Wire.endTransmission();
    dataSent = true;
-   digitalWrite(inLED,HIGH);
-   delay(1000);
-   digitalWrite(inLED,LOW);
+   for(int i =1; i<=3;i++){
+    digitalWrite(gLED,HIGH);
+    delay(250);
+    digitalWrite(gLED,LOW);
+    delay(250);
+   }
    digitalWrite(OUTPin,HIGH);
  }
  else if(dataSent = true){

@@ -1,14 +1,3 @@
-/**
-*
-* Sample Multi Master I2C implementation.  Sends a button state over I2C to another
-* Arduino, which flashes an LED correspinding to button state.
-* 
-* Connections: Arduino analog pins 4 and 5 are connected between the two Arduinos, 
-* with a 1k pullup resistor connected to each line.  Connect a push button between 
-* digital pin 10 and ground, and an LED (with a resistor) to digital pin 9.
-* 
-*/
-
 #include <Wire.h>
 
 #define OUTPin 5
@@ -17,7 +6,11 @@
 #define gLED 8
 #define bLED 7
 
-#define THIS_ADDR 0
+#define THIS_ADDR 8
+
+byte blockCount = 1;
+char data[20][26];
+bool dataSent = false;
 
 void setup() {
  pinMode(inLED, OUTPUT);
@@ -30,6 +23,8 @@ void setup() {
  digitalWrite(bLED, LOW);
  pinMode(OUTPin, OUTPUT);
  digitalWrite(OUTPin, HIGH);
+ dataSent = false;
+ data[20][26] = {'-'};
  
  Wire.begin(THIS_ADDR);
  Wire.onReceive(receiveEvent);
@@ -48,12 +43,29 @@ void loop() {
 }
 
 void receiveEvent(int howMany){
+ int No = 0;
  while (Wire.available()){
    char c = Wire.read();
-   Serial.print(c);
+   if(No<26){
+    data[blockCount-1][No] = c;
+    No++;
+   }
+   else{
+    Serial.println("Out of bound(>26)");
+   }
  }
  digitalWrite(inLED, HIGH);
+ for(int j =1; j<=blockCount; j++){
+  for(int i =0; i<26; i++){
+    Serial.print(data[j-1][i]);
+  }
+  Serial.print(j);
+  Serial.println();
+ }
  Serial.println();
+ Serial.println();
+ Serial.println();
+ blockCount++;
  delay(1000);
  digitalWrite(inLED, LOW);
 }

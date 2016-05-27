@@ -12,23 +12,31 @@ import pdb
 import random
 import time
 import sys
+import serial
 
 
 
-def myParse( Comment , my , enemy , action ):
+
+
+
+
+def myParse( Comment , my , enemy , action , player ):
     #global My_stragedy
 
     global count
     global count_if
 
     #M = My_stragedy.readline()
-    if my[3] == True:
-        return
-    M = Comment.readline()
-    if len(M)==0:
+    #if my[3] == True:
+    #    return
+    M = Comment[read_index[player]]
+    read_index[player] += 1
+    if read_index[player] >= len(Comment):
+        read_index[player] = 0
+    #if len(M)==0:
         #pdb.set_trace()
-        my[3] = True
-        return
+    #    my[3] = True
+    #    return
     M = M[:-1]
     M_comment = M.split(" ")
     while M_comment[0] == "":
@@ -57,7 +65,8 @@ def myParse( Comment , my , enemy , action ):
         else:
             while True:
                 #M = My_stragedy.readline()
-                M = Comment.readline()
+                M = Comment[read_index[player]]
+                read_index[player] += 1
                 M = M[:-1]
                 if M.split(" ")[0] == "e_else" and count_if == 0:
                     count_if = 0
@@ -74,11 +83,15 @@ def myParse( Comment , my , enemy , action ):
         Answer = getcondition( M_comment , my,enemy)
         if Answer == True: 
             #myParse()
-            myParse(Comment , my , enemy , action)
+            if player ==0:
+                #s.write(chr(read_index[0]))
+                print str(read_index[0])+"<<<<<<<"
+            myParse(Comment , my , enemy , action , player)
         else:
             while True:
                 #M = My_stragedy.readline()
-                M = Comment.readline()
+                M = Comment[read_index[player]]
+                read_index[player] += 1
                 M = M[:-1]
                 if M.split(" ")[0] == "m_else" and count_if == 0:
                     count_if = 0
@@ -90,31 +103,62 @@ def myParse( Comment , my , enemy , action ):
                 #else:
                     #print "if else count error"
             #myParse()
-            myParse(Comment , my , enemy , action)
+            if player ==0:
+                #s.write(chr(read_index[0]))
+                print str(read_index[0])+"<<<<<<<"
+            myParse(Comment , my , enemy , action , player)
     elif M_comment[0] == "e_else":
         while True:
             #M = My_stragedy.readline()
-            M = Comment.readline()
+            M = Comment[read_index[player]]
+            read_index[player] += 1
             M = M[:-1]
             if M.split(" ")[0] == "end":
                 break
         #myParse()
-        myParse(Comment , my , enemy , action)
+        if player ==0:
+            #s.write(chr(read_index[0]))
+            print str(read_index[0])+"<<<<<<<"
+        myParse(Comment , my , enemy , action , player)
     elif M_comment[0] == "m_else":
         while True:
             #M = My_stragedy.readline()
-            M = Comment.readline()
+            M = Comment[read_index[player]]
+            read_index[player] += 1
             M = M[:-1]
             if M.split(" ")[0] == "end":
                 break
-        myParse(Comment , my , enemy , action)
+        if player ==0:
+            #s.write(chr(read_index[0]))
+            print str(read_index[0])+"<<<<<<<"
+        myParse(Comment , my , enemy , action , player)
     elif M_comment[0] == "fire":
         #EnemyCastle[1] -= MyCastle[2]
         enemy[1] -= my[2]
         action['fire'] = True
     elif M_comment[0] == "end":
         #myParse()
-        myParse(Comment , my , enemy , action)
+        if player ==0:
+            #s.write(chr(read_index[0]))
+            print str(read_index[0])+"<<<<<<<"
+        myParse(Comment , my , enemy , action, player)
+    elif M_comment[0] == "loop":
+        turtle[player].append([read_index[player],int(M_comment[1])])
+        if player ==0:
+            #s.write(chr(read_index[0]))
+            print str(read_index[0])+"<<<<<<<"
+        myParse(Comment , my , enemy , action, player)
+    elif M_comment[0] == "end_loop":
+        if turtle[player][len(turtle[player])-1][1] == 1:
+            turtle[player].pop()
+        else:
+            turtle[player][len(turtle[player])-1][1] -= 1
+            read_index[player] = turtle[player][len(turtle[player])-1][0]
+        if player ==0:
+            #s.write(chr(read_index[0]))
+            print str(read_index[0])+"<<<<<<<"
+        myParse(Comment , my , enemy , action, player)
+
     else:
         print "comment "  , count , " input error : " , M_comment[0] 
 
@@ -249,7 +293,7 @@ class Shadow(pygame.sprite.Sprite):
 
     def __init__(self, owner):
         pygame.sprite.Sprite.__init__(self)
-        self.image = SPRITE_CACHE["shadow.png"][0][0]
+        self.image = SPRITE_CACHE["sprites/shadow.png"][0][0]
         self.image.set_alpha(64)
         self.rect = self.image.get_rect()
         self.owner = owner
@@ -325,7 +369,7 @@ class Soldier(Sprite):
     is_player = False
 
     def __init__(self, item, pos=(1, 1)):
-        self.frames = Soldier_Cache[item+".png"]
+        self.frames = Soldier_Cache["sprites/"+item+".png"]
         Sprite.__init__(self, pos)
         self.direction = 0
         self.animation = None
@@ -369,7 +413,7 @@ class Player(Sprite):
     is_player = True
 
     def __init__(self, pos=(1, 1)):
-        self.frames = SPRITE_CACHE["player.png"]
+        self.frames = SPRITE_CACHE["sprites/player.png"]
         Sprite.__init__(self, pos)
         self.direction = 2
         self.animation = None
@@ -526,6 +570,7 @@ class Game(object):
         self.castle()
         self.m_men = dict()
         self.e_men = dict()
+        self.stop_game = False
 
     def use_level(self, level):
         """Set the level as the current one."""
@@ -580,133 +625,92 @@ class Game(object):
         self.pressed_key = None
 
     def castle(self):
-        for x in range (0,3):
-            for y in range (0,4):
-                sprite = Castle((x+3,y+4), MAP_CACHE['castle.png'])
+        for x in range (0,4):
+            for y in range (0,6):
+                sprite = Castle((x+1,y+6), MAP_CACHE['sprites/castle.png'])
                 sprite.xy_image(x,y)
                 sprite.depth=x+3*y
                 self.sprites.add(sprite)
 
-                sprite = Castle((x+46,y+4), MAP_CACHE['castle.png'])
+                sprite = Castle((x+46,y+6), MAP_CACHE['sprites/castle.png'])
                 sprite.xy_image(x,y)
                 sprite.depth=x+3*y
                 self.sprites.add(sprite)
 
     def build_wall(self, item, stage ,stop):
-        if stop:
-            return
         if item == 'm_wall':
             x=16
         else:
             x=34
 
         if stage == 0:
-            if item+'2_s' in self.items:
-                return
-            if item+'2' in self.items:
-                return
-            sprite = Sprite((x,2), SPRITE_CACHE['smoke.png'])
-            self.items[item+'2_s'] = sprite 
-            self.sprites.add(sprite)
 
-            sprite = Sprite((x,3), SPRITE_CACHE['smoke.png'])
-            self.items[item+'3_s'] = sprite 
-            self.sprites.add(sprite)
+            for y in range (2,17):
+                if y in (8,9,10):
+                    continue
+                elif item+str(y)+'_s' in self.items:
+                    continue
+                else:
+                    sprite = Sprite((x,y), SPRITE_CACHE['sprites/smoke.png'])
+                    self.items[item+str(y)+'_s'] = sprite 
+                    self.sprites.add(sprite)
 
-            sprite = Sprite((x,4), SPRITE_CACHE['smoke.png'])
-            self.items[item+'4_s'] = sprite 
-            self.sprites.add(sprite)
-
-            sprite = Sprite((x,5), SPRITE_CACHE['smoke.png'])
-            self.items[item+'5_s'] = sprite 
-            self.sprites.add(sprite)
-
-            sprite = Sprite((x,7), SPRITE_CACHE['smoke.png'])
-            self.items[item+'7_s'] = sprite 
-            self.sprites.add(sprite)
-
-            sprite = Sprite((x,8), SPRITE_CACHE['smoke.png'])
-            self.items[item+'8_s'] = sprite 
-            self.sprites.add(sprite)
-
-            sprite = Sprite((x,9), SPRITE_CACHE['smoke.png'])
-            self.items[item+'9_s'] = sprite 
-            self.sprites.add(sprite)
-
-            sprite = Sprite((x,10), SPRITE_CACHE['smoke.png'])
-            self.items[item+'10_s'] = sprite 
-            self.sprites.add(sprite)
+            
         else:
-            if item+'2' in self.items:
-                return
-            self.remove(item+'2_s')
-            sprite = Castle((x,2), SPRITE_CACHE['wall.png'])
-            sprite.xy_image(0,0)
-            self.items[item+'2'] = sprite #m_wall2
-            self.sprites.add(sprite)
+            for y in range(2,17):
+                if y in (8,9,10):
+                    continue
+                else:
+                    self.remove(item+str(y)+'_s')
 
-            self.remove(item+'3_s')
-            sprite = Castle((x,3), SPRITE_CACHE['wall.png'])
-            sprite.xy_image(0,2)
-            self.items[item+'3'] = sprite #m_wall3
-            self.sprites.add(sprite)
+                    if y in (2,11):
+                        i,j = 0,0
+                    elif y in (7,16):
+                        i,j = 0,4
+                    else:
+                        i,j = 0,2
 
-            self.remove(item+'4_s')
-            sprite = Castle((x,4), SPRITE_CACHE['wall.png'])
-            sprite.xy_image(0,2)
-            self.items[item+'4'] = sprite #m_wall4
-            self.sprites.add(sprite)
+                if item+str(y) not in self.items and not stop:
+                    sprite = Castle((x,y), SPRITE_CACHE['sprites/wall.png'])
+                    sprite.xy_image(i,j)
+                    self.items[item+str(y)] = sprite #m_wall2
+                    self.sprites.add(sprite)
 
-            self.remove(item+'5_s')
-            sprite = Castle((x,5), SPRITE_CACHE['wall.png'])
-            sprite.xy_image(0,4)
-            self.items[item+'5'] = sprite #m_wall5
-            self.sprites.add(sprite)
-
-            self.remove(item+'7_s')
-            sprite = Castle((x,7), SPRITE_CACHE['wall.png'])
-            sprite.xy_image(0,0)
-            self.items[item+'7'] = sprite #m_wall7
-            self.sprites.add(sprite)
-
-            self.remove(item+'8_s')
-            sprite = Castle((x,8), SPRITE_CACHE['wall.png'])
-            sprite.xy_image(0,2)
-            self.items[item+'8'] = sprite #m_wall8
-            self.sprites.add(sprite)
-
-            self.remove(item+'9_s')
-            sprite = Castle((x,9), SPRITE_CACHE['wall.png'])
-            sprite.xy_image(0,2)
-            self.items[item+'9'] = sprite #m_wall9
-            self.sprites.add(sprite)
-
-            self.remove(item+'10_s')
-            sprite = Castle((x,10), SPRITE_CACHE['wall.png'])
-            sprite.xy_image(0,4)
-            self.items[item+'10'] = sprite #m_wall10
-            self.sprites.add(sprite)
 
     def remove_wall(self, item):
-        self.remove(item+'2')
-        self.remove(item+'3')
-        self.remove(item+'4')
-        self.remove(item+'5')
-        self.remove(item+'7')
-        self.remove(item+'8')
-        self.remove(item+'9')
-        self.remove(item+'10')
+        for y in range(2,17):
+            self.remove(item+str(y))
 
-    def build_man(self,item):
+    def build_man(self, item, stage):
         if item == 'm_man':
-            sprite = Soldier(item,(6,6+len(self.m_men)))
-            self.m_men[str(len(self.m_men))]=sprite
+            men = self.m_men
+            x,y = 5,9
         else:
-            if len(self.e_men)>0:                                  ####################demo
+            men = self.e_men
+            x,y = 45,9
+
+
+        if stage ==0:
+            if item+'_s' in self.items:
                 return
-            sprite = Soldier(item,(45,6+len(self.m_men)))
-            self.e_men[str(len(self.e_men))]=sprite
-        self.sprites.add(sprite)
+            else:
+                if '0' in men:
+                    self.sprites.remove(men['0'])
+                    del men['0']
+                sprite = Sprite((x,y), SPRITE_CACHE['sprites/smoke.png'])
+                sprite.depth = 0
+                self.items[item+'_s'] = sprite 
+                self.sprites.add(sprite)
+        else:
+            self.remove(item+'_s')
+
+            
+            if len(men)>0:                                  ####################demo
+                return
+            sprite = Soldier(item,(x,y+len(men)))
+            sprite.depth = 0
+            men[str(len(men))]=sprite
+            self.sprites.add(sprite)
             
     def build(self, item , stage , stop):
         if item in ('m_wall','e_wall'):
@@ -719,25 +723,21 @@ class Game(object):
             return
 
         if item == 'm_cannon':
-            x,y = 17,8
+            x,y = 17,12
         elif item == 'e_cannon':
-            x,y = 33,8
-        elif item == 'm_bullet':
-            x,y = 18,8
-        else:
-            x,y = 32,8
+            x,y = 33,12
+        
 
         if stage == 0:
             if item+'_s' in self.items:
                 return
-            sprite = Sprite((x,y), SPRITE_CACHE['smoke.png'])
+            sprite = Sprite((x,y), SPRITE_CACHE['sprites/smoke.png'])
             self.items[item+'_s']=sprite
             self.sprites.add(sprite)
         elif stage == 1:
             self.remove(item+'_s')
-            sprite = Sprite((x,y), SPRITE_CACHE[item+'.png'])
-            if item in ('e_cannon','m_cannon'):
-                sprite.move(-7,0)
+            sprite = Sprite((x,y), SPRITE_CACHE["sprites/"+item+'.png'])
+            sprite.move(-7,0)
             self.items[item]=sprite
             self.sprites.add(sprite)
             
@@ -745,14 +745,14 @@ class Game(object):
         
     def fire(self, item , stage):
         if item == 'm_fire':
-            x,y = 18,8
+            x,y = 18,12
             bullet = 'm_bullet'
             speed = 30
             wall = 'e_wall'
             castle_pos = 46
             life = EnemyCastle[1]
         else:
-            x,y = 32,8
+            x,y = 32,12
             bullet='e_bullet'
             speed = -30
             wall = 'm_wall'
@@ -760,7 +760,7 @@ class Game(object):
             life = MyCastle[1]
         if stage == 0:
             if bullet not in self.items:
-                sprite = Sprite((x,y), SPRITE_CACHE[bullet+'.png'])
+                sprite = Sprite((x,y), SPRITE_CACHE["sprites/"+bullet+'.png'])
                 self.items[bullet]=sprite
                 sprite.move(0,-8)
                 self.sprites.add(sprite)
@@ -771,7 +771,7 @@ class Game(object):
 
             if item in self.items:
                 return 0
-            sprite = Sprite((x,y), SPRITE_CACHE[item+'.png'])
+            sprite = Sprite((x,y), SPRITE_CACHE["sprites/"+item+'.png'])
             sprite.move(0,-8)
             self.items[item]=sprite
             self.sprites.add(sprite)
@@ -826,19 +826,123 @@ class Game(object):
                 if self.e_men['0'].animation is None:
                     return self.e_men['0'].moveto(16,6,1) 
 
+    def update_round(self, count):
+        basicfont = pygame.font.SysFont(None, 48)
+        if count == 0:
+            text = basicfont.render('press to start', True, (255/1.2, 255/1.2, 255/1.2))
+        else:
+            text = basicfont.render('Round '+str(count), True, (255/1.2, 255/1.2, 255/1.2))
+        textrect = text.get_rect()
+        textrect.centerx = self.screen.get_rect().centerx
+        textrect.centery = self.screen.get_rect().centery-60
+        #self.screen.fill((255, 255, 255))
+        background_copy = self.background.copy()
+        background_copy.blit(text, textrect)
+        self.screen.blit(background_copy,(0,0))
+        pygame.display.update(textrect)
+
+        if count == 0:
+            return False
+        else:
+            return True
+
+    def update_score(self):
+        background_copy = self.background.copy()
+        basicfont = pygame.font.SysFont(None, 24)
+        textrects = list()
+        
+        string = ''
+        if MyCastle[0] > 0 :
+            string = ' x'+str(MyCastle[0])
+            string += ' ' * (4 - len(string))
+        text = basicfont.render(string, True, (255, 255, 255))
+        textrect = text.get_rect()
+        textrect.centerx = 24*5+12
+        textrect.centery = 16*7+8
+        #self.screen.fill((255, 255, 255))
+        background_copy.blit(text, textrect)
+        textrects.append(textrect)
+        
+        string = ''
+        if MyCastle[1] > 0 :
+            string = 'x'+str(MyCastle[1])
+            string += ' ' * (4 - len(string))
+        text = basicfont.render(string, True, (255, 255, 255))
+        textrect = text.get_rect()
+        textrect.centerx = 24*14+18
+        textrect.centery = 16*7+8
+        #self.screen.fill((255, 255, 255))
+        background_copy.blit(text, textrect)
+        textrects.append(textrect)
+
+        string = ''
+        if MyCastle[2] > 0 :
+            string = 'x'+str(MyCastle[2])
+            string += ' ' * (4 - len(string))
+        text = basicfont.render(string, True, (255, 255, 255))
+        textrect = text.get_rect()
+        textrect.centerx = 24*18
+        textrect.centery = 16*13+8
+        #self.screen.fill((255, 255, 255))
+        background_copy.blit(text, textrect)
+        textrects.append(textrect)
+
+        string = ''
+        if EnemyCastle[0] > 0 :
+            string = 'x'+str(EnemyCastle[0])
+            string += ' ' * (4 - len(string))
+        text = basicfont.render(string, True, (255, 255, 255))
+        textrect = text.get_rect()
+        textrect.centerx = 24*45+12
+        textrect.centery = 16*7+8
+        #self.screen.fill((255, 255, 255))
+        background_copy.blit(text, textrect)
+        textrects.append(textrect)
+
+        string = ''
+        if EnemyCastle[1] > 0 :
+            string = 'x'+str(EnemyCastle[1])
+            string += ' ' * (3 - len(string))
+        text = basicfont.render(string, True, (255, 255, 255))
+        textrect = text.get_rect()
+        textrect.centerx = 24*36
+        textrect.centery = 16*7+8
+        #self.screen.fill((255, 255, 255))
+        background_copy.blit(text, textrect)
+        textrects.append(textrect)
+
+        string = ''
+        if EnemyCastle[2] > 0 :
+            string = 'x'+str(EnemyCastle[2])
+            string += ' ' * (4 - len(string))
+        text = basicfont.render(string, True, (255, 255, 255))
+        textrect = text.get_rect()
+        textrect.centerx = 24*32+12
+        textrect.centery = 16*13+8
+        #self.screen.fill((255, 255, 255))
+        background_copy.blit(text, textrect)
+        textrects.append(textrect)
+
+
+
+
+        self.screen.blit(background_copy,(0,0))
+        pygame.display.update(textrects)
+
 
     def main(self):
-        """Run the main loop."""
+        """Run the main loop."""    
+        pause = True
 
         clock = pygame.time.Clock()
         # Draw the whole screen initially
 
         # Display some text
-        #font = pygame.font.Font(None, 36)
-        #text = font.render("Hello There", 1, (10, 10, 10))
-        #textpos = text.get_rect()
-        #textpos.centerx = self.background.get_rect().centerx
-        #self.background.blit(text, textpos)
+        basicfont = pygame.font.SysFont(None, 48)
+        text = basicfont.render('press to start', True, (255/1.2, 255/1.2, 255/1.2))
+        textrect = text.get_rect()
+        textrect.centerx = self.screen.get_rect().centerx
+        textrect.centery = self.screen.get_rect().centery-60
 
         self.screen.blit(self.background, (0, 0))
         self.overlays.draw(self.screen)
@@ -866,50 +970,53 @@ class Game(object):
             m_action['detect'] = None
             e_action['detect'] = None
             print "=============  " , count , "round  =========================="
-            myParse(My_stragedy , MyCastle , EnemyCastle, m_action)
-            if mode == "Dual":
-                myParse(Enemy_stragedy , EnemyCastle , MyCastle, e_action)
-            elif mode == "single":
-                move = random.randint(0,3)
-                if move == 0 :
-                    EnemyCastle[0] += 1
-                elif move == 1 :
-                    EnemyCastle[1] += EnemyCastle[0]
-                elif move == 2 :
-                    EnemyCastle[2] += EnemyCastle[0]
-                elif move == 3 :
-                    MyCastle[1] -= EnemyCastle[2] 
-            else:
-                print "mode error"
+            if self.update_round(count):
+                #s.write(chr(read_index[0]))
+                print str(read_index[0])+"<<<<<<<"
+                myParse(My_stragedy , MyCastle , EnemyCastle, m_action, 0)
+                if mode == "Dual":
+                    myParse(Enemy_stragedy , EnemyCastle , MyCastle, e_action, 1)
+                elif mode == "single":
+                    move = random.randint(0,3)
+                    if move == 0 :
+                        EnemyCastle[0] += 1
+                    elif move == 1 :
+                        EnemyCastle[1] += EnemyCastle[0]
+                    elif move == 2 :
+                        EnemyCastle[2] += EnemyCastle[0]
+                    elif move == 3 :
+                        MyCastle[1] -= EnemyCastle[2] 
+                else:
+                    print "mode error"
 
-            pygame.display.set_caption("Round "+str(count))
-            count += 1     
+                
 
-            if m_action['build'] == 'man':
-                self.build_man('m_man')
-            if e_action['build'] == 'man':
-                self.build_man('e_man')
+                
+                print MyCastle
+                print EnemyCastle
+                print " " 
 
-            print MyCastle
-            print EnemyCastle
-            print " " 
-
-
-            #animation
+                #animation
 
             round_clock=0
             stage_b = 0
             stage_f = 0
             m_detect_ret = False
             e_detect_ret = False
-            while round_clock<self.round_cycle:
+            count += 1     
+
+            while round_clock<self.round_cycle and not self.game_over:
                 round_clock += 1
                 if m_win:
                     raw_input('Press to end')
 
-                if round_clock > self.round_cycle*0.2:
+                if round_clock == 15:
+                    self.screen.blit(self.background,(0,0))
+                    pygame.display.update(textrect)
+                if round_clock == int(self.round_cycle*0.13):
                     stage_b = 1
-                if round_clock > self.round_cycle*0.04:
+                    self.update_score()
+                if round_clock == int(self.round_cycle*0.04):
                     stage_f = 1
                 
 
@@ -941,6 +1048,13 @@ class Game(object):
                     if self.detect('e_',e_detect_ret):
                         e_detect_ret = True
 
+                if m_action['build'] == 'man':
+                    self.build_man('m_man', stage_b)
+                if e_action['build'] == 'man':
+                    self.build_man('e_man', stage_b)
+
+
+
 
                 # Don't clear shadows and overlays, only sprites.
                 self.sprites.clear(self.screen, self.background)
@@ -962,11 +1076,12 @@ class Game(object):
                 pygame.display.update(dirty)
                 # Wait for one tick of the game clock
                 clock.tick(15)
+               
 
                 if m_win : 
                     # Display some text
                     basicfont = pygame.font.SysFont(None, 48)
-                    text = basicfont.render('You Win!', True, (255, 0, 0))
+                    text = basicfont.render('You Win!', True, (255/1.2, 255/1.2, 255/1.2))
                     textrect = text.get_rect()
                     textrect.centerx = self.screen.get_rect().centerx
                     textrect.centery = self.screen.get_rect().centery
@@ -974,16 +1089,53 @@ class Game(object):
                     #self.screen.fill((255, 255, 255))
                     self.screen.blit(text, textrect)
 
-                    image = pygame.image.load('crash.png').convert_alpha()
-                    self.screen.blit(image,(46*24,58))
+                    image = pygame.image.load('sprites/crash.png').convert_alpha()
+                    self.screen.blit(image,(46*24,85))
                     pygame.display.flip()
+                    self.game_over = True
+                    pause = True
+
+                elif e_win : 
+                    # Display some text
+                    basicfont = pygame.font.SysFont(None, 48)
+                    text = basicfont.render('You Lose!', True, (255/1.2, 255/1.2, 255/1.2))
+                    textrect = text.get_rect()
+                    textrect.centerx = self.screen.get_rect().centerx
+                    textrect.centery = self.screen.get_rect().centery
+ 
+                    #self.screen.fill((255, 255, 255))
+                    self.screen.blit(text, textrect)
+
+                    image = pygame.image.load('sprites/crash.png').convert_alpha()
+                    self.screen.blit(image,(24,85))
+                    pygame.display.flip()
+                    self.game_over = True
+                    pause = True
 
                 # Process pygame events
                 for event in pygame.event.get():
                     if event.type == pg.QUIT:
                         self.game_over = True
+                        self.stop_game = True
                     elif event.type == pg.KEYDOWN:
                         self.pressed_key = event.key
+                        if event.key == pg.K_SPACE:
+                            pause = True
+                        if event.key == pg.K_ESCAPE:
+                            self.game_over = True
+                            self.stop_game = True
+                            pause = False
+                while pause:
+                    for event in pygame.event.get():
+                        if event.type == pg.KEYDOWN:
+                            if event.key == pg.K_ESCAPE:
+                                self.game_over = True
+                                self.stop_game = True
+                                pause = False
+                            if event.key == pg.K_SPACE:
+                                pause = False
+
+        return self.stop_game
 
 
 
@@ -995,57 +1147,52 @@ DY = [ 1, 0, 0,-1]
 
 # Dimensions of the map tiles
 MAP_TILE_WIDTH, MAP_TILE_HEIGHT = 24, 16
+MyCastle    = [ 0 , 0 , 0 , False , "User"]
+EnemyCastle = [ 0 , 0 , 0 , False , "Com1"]
+
+read_index = [0,0]
+turtle = [[],[]]
+
+My_stragedy_f = open( 'mine' , "r")
+Enemy_stragedy_f = 0 
+
+count = 0
+count_if = 0
+
+mode = "Dual"
+    
+
+if mode == "Dual":
+    Enemy_stragedy_f = open( 'enemy', "r")
+
+My_stragedy = My_stragedy_f.readlines()
+Enemy_stragedy = Enemy_stragedy_f.readlines()
+    
+#My_finish = False
+#Enemy_finish = False
+
+#pdb.set_trace()
+    
+#E = Enemy_stragedy.readline()
+#E_comment = E.split(" ")
+    
+
+SPRITE_CACHE = TileCache()
+Soldier_Cache = Soldier_Cache()
+MAP_CACHE = TileCache(MAP_TILE_WIDTH, MAP_TILE_HEIGHT)
+TILE_CACHE = TileCache(32, 32)
+
+#s = serial.Serial('COM3',9600)
 
 
-if __name__ == "__main__":
+def run():
     #             man ,  wall , connon, ifFinish
-    MyCastle    = [ 0 , 0 , 0 , False , "User"]
-    EnemyCastle = [ 0 , 0 , 0 , False , "Com1"]
-
-
-
-    My_stragedy = open( sys.argv[1] , "r")
-    Enemy_stragedy = 0 
-
-    count = 1
-    count_if = 0
-
-    if len(sys.argv) == 2:
-        print "Single player "
-        mode = "single"
-    elif len(sys.argv) == 3:
-        print "Dual players"
-        mode = "Dual"
-    else:
-        print "Input error"
-        print "python testgame.py <Players1's program> [Player2's program] "
-
-    #print 'Number of arguments:', len(sys.argv), 'arguments.'
-    #print 'Argument List:', str(sys.argv)
-
-
-
-    if mode == "Dual":
-        Enemy_stragedy = open( sys.argv[2] , "r")
     
-    #My_finish = False
-    #Enemy_finish = False
-
-    #pdb.set_trace()
-    
-    #E = Enemy_stragedy.readline()
-    #E_comment = E.split(" ")
-    
-
-    SPRITE_CACHE = TileCache()
-    Soldier_Cache = Soldier_Cache()
-    MAP_CACHE = TileCache(MAP_TILE_WIDTH, MAP_TILE_HEIGHT)
-    TILE_CACHE = TileCache(32, 32)
     pygame.init()
-    pygame.display.set_mode((1224, 190))
+    pygame.display.set_mode((1224, 300))
     pygame.display.set_caption("Legoram")
 
 
-    Game().main()
+    return Game().main()
 
 

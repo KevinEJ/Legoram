@@ -6,4 +6,5 @@ e_if m_man = e_wall
     build wall
 e_else
     build man
+end
 fire
