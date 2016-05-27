@@ -36,19 +36,35 @@ void setup() {
 }
 
 void loop() {
- /*digitalWrite(OUTPin, HIGH);
- digitalWrite(inLED, LOW);
- digitalWrite(rLED, LOW);
- digitalWrite(bLED, LOW);*/
  int LEDblock = int(Serial.read());
  if(LEDblock == 0){
+    for(int i =0,i<3;i++){
+       digitalWrite(gLED,HIGH);
+       delay(250);
+       digitalWrite(gLED,LOW);
+       delay(250);
+    }
     for(int j=0;j<20;j++){
       for(int i=0;i<26;i++){
         Serial.write(data[j][i]);
       }
     }
  }
+ else if(LEDblock == -1){
+    for(int i =0,i<3;i++){
+       digitalWrite(rLED,HIGH);
+       delay(250);
+       digitalWrite(rLED,LOW);
+       delay(250);
+    }
+ }
  else{
+    digitalWrite(rLED,HIGH);
+    digitalWrite(bLED,HIGH);
+    delay(250);
+    digitalWrite(rLED,LOW);
+    digitalWrite(bLED,LOW);
+    delay(250);
     char LED_ADDR = data[LED_block-1][25];
     Wire.beginTransmission(LED_ADDR);
     Wire.write("run");
