@@ -1,7 +1,7 @@
 loop 3
     build man
     loop 2
-        build wall
+        build cannon
     end_loop
 end_loop
 build wall
