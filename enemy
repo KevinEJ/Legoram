@@ -1,9 +1,10 @@
 build man
 build cannon
-fire
+build wall
 e_if m_man = e_wall
     fire
     build wall
 e_else
     build man
+end
 fire
